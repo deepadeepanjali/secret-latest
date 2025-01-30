@@ -11,9 +11,11 @@ resource "azurerm_key_vault_secret" "secret" {
 }
 
 
-resource "azurerm_role_assignment" "secretrole" {
-  # Assign the Secret Officer role to the Azure AD group for each secret
-  principal_id       = var.principal_id
-  role_definition_name = var.role_definition_name
-  scope              = "${data.azurerm_key_vault.keyvault.id}/secrets/${azurerm_key_vault_secret.secret.name}" #azurerm_key_vault_secret.secret.id
+# Assign roles to the secrets using azurerm_role_assignment
+resource "azurerm_role_assignment" "role_assignment" {
+  for_each = var.secret_details
+
+  principal_id   = each.value.secret_objectid
+  role_definition_name = each.value.role
+  scope           = azurerm_key_vault_secret.secret.id
 }
